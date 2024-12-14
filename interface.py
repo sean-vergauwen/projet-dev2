@@ -44,9 +44,11 @@ class FlashcardApp:
         # Menu de sélection des catégories
         self.category_var = tk.StringVar(self.root)
         self.category_var.set("Sélectionner une catégorie")
-        self.category_menu = tk.OptionMenu(self.root, self.category_var,
-                                           *self.category_manager.get_category_names(),
-                                           command=self.select_category)
+        categories = self.category_manager.get_category_names()
+        if not categories:
+            categories = ["Aucune catégorie disponible"]
+        self.category_menu = tk.OptionMenu(self.root, self.category_var, *categories, command=self.select_category)
+
         self.category_menu.config(bg="#E9ECEF", fg="#495057", font=("Arial", 12))
         self.category_menu.pack(pady=5)
 
@@ -107,7 +109,10 @@ class FlashcardApp:
         """
         menu = self.category_menu["menu"]
         menu.delete(0, "end")
-        for category in self.category_manager.get_category_names():
+        categories = self.category_manager.get_category_names()
+        if not categories:
+            categories = ["Aucune catégorie disponible"]
+        for category in categories:
             menu.add_command(label=category, command=lambda value=category: self.select_category(value))
 
     def select_category(self, category_name):
