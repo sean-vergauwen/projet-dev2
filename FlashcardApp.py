@@ -29,7 +29,10 @@ class FlashcardApp:
         self.correct_answers = 0  # Nombre de réponses correctes
         self.incorrect_answers = 0  # Nombre de réponses incorrectes
 
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
         self.create_widgets()
+        self.display_global_stats()
 
     def create_widgets(self):
         """
@@ -81,7 +84,7 @@ class FlashcardApp:
         # Boutons pour afficher les cartes et les statistiques
         tk.Button(self.root, text="Voir toutes les cartes et catégories",
                   command=self.show_all_cards, bg="#6F42C1", fg="white", font=("Arial", 12)).pack(pady=10)
-        tk.Button(self.root, text="Voir les statistiques",
+        tk.Button(self.root, text="Voir les statistiques de la session",
                   command=self.show_statistics, bg="#343A40", fg="white", font=("Arial", 12)).pack(pady=10)
 
     def start_review(self):
@@ -266,5 +269,34 @@ class FlashcardApp:
         # Bouton pour fermer la fenêtre
         tk.Button(popup, text="Fermer", command=popup.destroy,
                   bg="#DC3545", fg="white", font=("Arial", 12)).pack(pady=10)
+    
+    def display_global_stats(self):
+        """
+        Affiche les statistiques globales au démarrage.
+        """
+        stats = DatabaseManager.get_global_stats()
+        if stats:
+            messagebox.showinfo(
+                "Statistiques Globales",
+                f"Sessions totales : {stats[0]}\n"
+                f"Bonnes réponses : {stats[1]}\n"
+                f"Mauvaises réponses : {stats[2]}\n"
+                f"Cartes révisées : {stats[3]}"
+            )
 
+    def save_session_stats(self):
+        """
+        Ajoute les statistiques de la session actuelle aux statistiques globales.
+        """
+        DatabaseManager.update_global_stats(
+            self.correct_answers,
+            self.incorrect_answers,
+            self.total_cards_reviewed
+        )
 
+    def on_closing(self):
+        """
+        Gère la fermeture de l'application.
+        """
+        self.save_session_stats()  # Enregistre les statistiques de la session
+        self.root.destroy()  # Ferme la fenêtre

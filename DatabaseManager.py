@@ -28,6 +28,22 @@ class DatabaseManager:
                 FOREIGN KEY (category_id) REFERENCES categories(id)
             )
         ''')
+        # Table des statistiques globales
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS global_stats (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                total_sessions INTEGER DEFAULT 0,
+                total_correct INTEGER DEFAULT 0,
+                total_incorrect INTEGER DEFAULT 0,
+                total_reviewed INTEGER DEFAULT 0
+            )
+        ''')
+        # Initialiser les statistiques globales si elles n'existent pas
+        cursor.execute('''
+            INSERT OR IGNORE INTO global_stats (id, total_sessions, total_correct, total_incorrect, total_reviewed)
+            VALUES (1, 0, 0, 0, 0)
+        ''')
+
         conn.commit()
         conn.close()
     
@@ -101,5 +117,35 @@ class DatabaseManager:
             cursor.execute("UPDATE flashcards SET review_score = review_score + 1 WHERE id = ?", (card_id,))
         else:
             cursor.execute("UPDATE flashcards SET review_score = 0 WHERE id = ?", (card_id,))
+        conn.commit()
+        conn.close()
+
+    @staticmethod
+    def get_global_stats():
+        """
+        Récupère les statistiques globales.
+        """
+        conn = sqlite3.connect('flashcards.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT total_sessions, total_correct, total_incorrect, total_reviewed FROM global_stats WHERE id = 1')
+        stats = cursor.fetchone()
+        conn.close()
+        return stats
+
+    @staticmethod
+    def update_global_stats(correct, incorrect, reviewed):
+        """
+        Met à jour les statistiques globales en ajoutant les statistiques d'une session.
+        """
+        conn = sqlite3.connect('flashcards.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE global_stats
+            SET total_sessions = total_sessions + 1,
+                total_correct = total_correct + ?,
+                total_incorrect = total_incorrect + ?,
+                total_reviewed = total_reviewed + ?
+            WHERE id = 1
+        ''', (correct, incorrect, reviewed))
         conn.commit()
         conn.close()
