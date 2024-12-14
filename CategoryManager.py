@@ -7,8 +7,9 @@ class CategoryManager:
     Classe pour gérer les catégories, y compris leur récupération et ajout.
     """
     def __init__(self):
-        # Charge toutes les catégories depuis la base de données
-        self.categories = DatabaseManager.get_all_categories()
+        # Charger toutes les catégories depuis une instance de DatabaseManager
+        self.db_manager = DatabaseManager()
+        self.categories = self.db_manager.get_all_categories()
 
     def get_category_names(self):
         """
@@ -20,5 +21,5 @@ class CategoryManager:
         """
         Ajoute une catégorie et met à jour la liste des catégories.
         """
-        DatabaseManager.add_category(name)
-        self.categories = DatabaseManager.get_all_categories()
+        self.db_manager.add_category(name)
+        self.categories = self.db_manager.get_all_categories()

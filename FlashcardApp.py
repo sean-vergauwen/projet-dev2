@@ -16,7 +16,8 @@ class FlashcardApp:
         self.root.geometry("600x500")
         self.root.config(bg="#F4F4F9")  # Couleur de fond de l'application
 
-        DatabaseManager.setup_database()
+        self.db_manager = DatabaseManager()
+        self.db_manager.setup_database()
 
         # Gestion des catégories et des cartes
         self.category_manager = CategoryManager()
@@ -139,7 +140,7 @@ class FlashcardApp:
             messagebox.showwarning("Erreur", "Les champs question et réponse ne peuvent pas être vides.")
             return
         if self.selected_category_id:
-            DatabaseManager.add_card(self.selected_category_id, question, answer)
+            self.db_manager.add_card(self.selected_category_id, question, answer)
             messagebox.showinfo("Succès", "Carte ajoutée avec succès.")
             self.question_entry.delete(0, tk.END)
             self.answer_entry.delete(0, tk.END)
@@ -190,7 +191,7 @@ class FlashcardApp:
         """
         card = self.card_manager.get_next_card()
         if card:
-            DatabaseManager.delete_card(card[0])
+            self.db_manager.delete_card(card[0])
             self.card_manager.load_cards(self.selected_category_id)
             self.show_next_card()
 
@@ -228,7 +229,7 @@ class FlashcardApp:
             selected_category = category_listbox.get(category_listbox.curselection())
             category = next((cat for cat in self.category_manager.categories if cat[1] == selected_category), None)
             if category:
-                cards = DatabaseManager.get_cards_by_category(category[0])
+                cards = self.db_manager.get_cards_by_category(category[0])
                 card_listbox.delete(0, tk.END)
                 for card in cards:
                     card_info = f"{card[1]} - {card[2]}"
@@ -274,7 +275,7 @@ class FlashcardApp:
         """
         Affiche les statistiques globales au démarrage.
         """
-        stats = DatabaseManager.get_global_stats()
+        stats = self.db_manager.get_global_stats()
         if stats:
             messagebox.showinfo(
                 "Statistiques Globales",
@@ -283,12 +284,13 @@ class FlashcardApp:
                 f"Mauvaises réponses : {stats[2]}\n"
                 f"Cartes révisées : {stats[3]}"
             )
+            self.root.after(100, self.reset_focus)
 
     def save_session_stats(self):
         """
         Ajoute les statistiques de la session actuelle aux statistiques globales.
         """
-        DatabaseManager.update_global_stats(
+        self.db_manager.update_global_stats(
             self.correct_answers,
             self.incorrect_answers,
             self.total_cards_reviewed
@@ -300,3 +302,10 @@ class FlashcardApp:
         """
         self.save_session_stats()  # Enregistre les statistiques de la session
         self.root.destroy()  # Ferme la fenêtre
+
+    def reset_focus(self):
+        """
+        Forcer le focus sur la fenêtre principale et le champ texte après un délai.
+        """
+        self.root.focus_force()  # Garantir que la fenêtre principale est au premier plan
+        self.category_entry.focus_set()  # Donner le focus au champ de texte pour qu'il soit cliquable
