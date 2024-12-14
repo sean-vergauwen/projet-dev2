@@ -12,9 +12,10 @@ class CardManager:
 
     def load_cards(self, category_id):
         """
-        Charge toutes les cartes d'une catégorie spécifique.
+        Charge toutes les cartes d'une catégorie spécifique et les trie par score croissant.
         """
         self.cards = DatabaseManager.get_cards_by_category(category_id)
+        self.cards.sort(key=lambda card: card[3])  # Trier par review_score
         self.current_card_index = 0
 
     def get_next_card(self):
@@ -27,18 +28,25 @@ class CardManager:
 
     def mark_card_as_correct(self):
         """
-        Augmente le score de la carte actuelle après qu'elle a été marquée comme correcte.
+        Augmente le score de la carte actuelle après une réponse correcte.
         """
         if self.cards:
             card_id = self.cards[self.current_card_index][0]
             DatabaseManager.update_card_score(card_id, True)
             self.cards.pop(self.current_card_index)
+            # Ajuster l'index si nécessaire
+            if self.current_card_index >= len(self.cards):
+                self.current_card_index = 0  # Retourner au début si l'index dépasse
 
     def mark_card_as_incorrect(self):
         """
-        Ne modifie pas le score et passe à la carte suivante.
+        Passe à la carte suivante après avoir enregistré le score incorrect.
         """
         if self.cards:
             card_id = self.cards[self.current_card_index][0]
             DatabaseManager.update_card_score(card_id, False)
-            self.current_card_index = (self.current_card_index + 1) % len(self.cards)
+            # Passer à la carte suivante uniquement si la liste n'est pas vide
+            if len(self.cards) > 1:
+                self.current_card_index = (self.current_card_index + 1) % len(self.cards)
+            else:
+                self.current_card_index = 0

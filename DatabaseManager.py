@@ -7,11 +7,11 @@ class DatabaseManager:
     """
     @staticmethod
     def setup_database():
-        """
-        Crée les tables nécessaires dans la base de données si elles n'existent pas déjà.
-        """
         conn = sqlite3.connect('flashcards.db')
+        conn.execute('PRAGMA foreign_keys = ON;')  # Activer les clés étrangères
         cursor = conn.cursor()
+
+        # Création des tables
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS categories (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,13 +24,13 @@ class DatabaseManager:
                 category_id INTEGER NOT NULL,
                 question TEXT NOT NULL,
                 answer TEXT NOT NULL,
-                review_score INTEGER DEFAULT 0,
+                review_score INTEGER DEFAULT 0,  -- Champ pour le suivi des performances
                 FOREIGN KEY (category_id) REFERENCES categories(id)
             )
         ''')
         conn.commit()
         conn.close()
-
+    
     @staticmethod
     def add_category(name):
         """
@@ -70,7 +70,7 @@ class DatabaseManager:
     @staticmethod
     def get_cards_by_category(category_id):
         """
-        Récupère toutes les cartes d'une catégorie donnée.
+        Récupère toutes les cartes d'une catégorie donnée triées par score.
         """
         conn = sqlite3.connect('flashcards.db')
         cursor = conn.cursor()

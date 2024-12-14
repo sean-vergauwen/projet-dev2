@@ -155,7 +155,7 @@ class FlashcardApp:
         """
         Marque la carte actuelle comme correcte et passe à la suivante.
         """
-        if not self.card_manager.cards:  # Si aucune carte n'est disponible
+        if not self.card_manager.cards:
             messagebox.showinfo("Révision terminée", "Vous avez terminé toutes les cartes.")
             self.question_label.config(text="Aucune carte restante.")
             self.answer_label.config(text="")
@@ -170,7 +170,7 @@ class FlashcardApp:
         """
         Marque la carte actuelle comme incorrecte et passe à la suivante.
         """
-        if not self.card_manager.cards:  # Si aucune carte n'est disponible
+        if not self.card_manager.cards:
             messagebox.showinfo("Révision terminée", "Vous avez terminé toutes les cartes.")
             self.question_label.config(text="Aucune carte restante.")
             self.answer_label.config(text="")
