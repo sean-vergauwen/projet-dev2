@@ -21,9 +21,10 @@ class DatabaseManager:
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS flashcards (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                category_id INTEGER,
+                category_id INTEGER NOT NULL,
                 question TEXT NOT NULL,
                 answer TEXT NOT NULL,
+                review_score INTEGER DEFAULT 0,
                 FOREIGN KEY (category_id) REFERENCES categories(id)
             )
         ''')
@@ -73,7 +74,7 @@ class DatabaseManager:
         """
         conn = sqlite3.connect('flashcards.db')
         cursor = conn.cursor()
-        cursor.execute("SELECT id, question, answer FROM flashcards WHERE category_id = ?", (category_id,))
+        cursor.execute("SELECT id, question, answer, review_score FROM flashcards WHERE category_id = ? ORDER BY review_score ASC", (category_id,))
         cards = cursor.fetchall()
         conn.close()
         return cards
@@ -86,5 +87,19 @@ class DatabaseManager:
         conn = sqlite3.connect('flashcards.db')
         cursor = conn.cursor()
         cursor.execute("DELETE FROM flashcards WHERE id = ?", (card_id,))
+        conn.commit()
+        conn.close()
+
+    @staticmethod
+    def update_card_score(card_id, is_correct):
+        """
+        Met à jour le score de la carte en fonction de la réponse.
+        """
+        conn = sqlite3.connect('flashcards.db')
+        cursor = conn.cursor()
+        if is_correct:
+            cursor.execute("UPDATE flashcards SET review_score = review_score + 1 WHERE id = ?", (card_id,))
+        else:
+            cursor.execute("UPDATE flashcards SET review_score = 0 WHERE id = ?", (card_id,))
         conn.commit()
         conn.close()

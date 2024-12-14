@@ -27,14 +27,18 @@ class CardManager:
 
     def mark_card_as_correct(self):
         """
-        Supprime la carte actuelle après qu'elle a été marquée comme correcte.
+        Augmente le score de la carte actuelle après qu'elle a été marquée comme correcte.
         """
         if self.cards:
+            card_id = self.cards[self.current_card_index][0]
+            DatabaseManager.update_card_score(card_id, True)
             self.cards.pop(self.current_card_index)
 
     def mark_card_as_incorrect(self):
         """
-        Passe à la carte suivante après qu'elle a été marquée comme incorrecte.
+        Ne modifie pas le score et passe à la carte suivante.
         """
         if self.cards:
+            card_id = self.cards[self.current_card_index][0]
+            DatabaseManager.update_card_score(card_id, False)
             self.current_card_index = (self.current_card_index + 1) % len(self.cards)
